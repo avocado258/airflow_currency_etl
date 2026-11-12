@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - mongo_data:/data/db          # persistent storage
+    networks:
+      - airflow                      # docker networking
+    labels:
+      - "meta.networking=airflow bridge network"
+      - "meta.storage=named volume mongo_data"
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin123@mongo:27017/
+    depends_on:
+      - mongo
+    networks:
+      - airflow
+    labels:
+      - "meta.networking=airflow bridge network"
+
+volumes:
+  mongo_data:
